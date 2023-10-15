@@ -75,15 +75,17 @@
         .join("circle")
         .attr("class", d => d.children ? "node" : "leaf node")
         .attr("fill", d => d.children ? "steelblue" : "lightgray")
-        .attr("r", d => d.r)
+        .attr("r", d => {
+        	return d.r
+        })
         .attr("cx", d => d.x)
         .attr("cy", d => d.y);
 
       // Add labels to the circles
       const label = svg.selectAll(".leaf.node")
         .append("text")
-        .attr("dy", "0.3em")
-        .text(d => d.data.name)
+        .attr("dy", "-1em")
+        .text(d => d.parent.data.name)
         .attr("text-anchor", "middle")
         .attr("font-size", "10px");
 
@@ -95,6 +97,30 @@
       svg.call(d3.zoom().on("zoom", function() {
         svg.attr("transform", d3.event.transform);
       }));
+
+      // Add labels for parent names
+      const groupLabel = svg.append("g")
+	    .attr("pointer-events", "none")
+	    .attr("text-anchor", "middle")
+	    .selectAll("text")
+	    .data(hierarchy.descendants())
+	    .join("text")
+	      .text(d => d.height === 1 ? d.data.name : '');
+	  
+	  groupLabel
+	    .attr("transform", d => `translate(${(d.x)}, ${(d.y - (d.r))})`)
+	    .attr("dy", "-0.25em")
+	    .attr("class", "repo-name")
+	    .attr("fill", "#fff")
+	    .clone(true)
+	            .lower()
+	            .attr("aria-hidden", "true")
+	            // .style("text-shadow", "1px 1px 2px #40081C, -1px 1px 2px #40081C") // This doesn't export well
+	            .attr("fill", "none")
+	            .attr("stroke", "#6A1131")
+	            .attr("stroke-width", 2)
+	            .attr("stroke-linecap", "round")
+	            .attr("stroke-linejoin", "round");
     });
   </script>
 </body>
