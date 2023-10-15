@@ -90,7 +90,8 @@
         .attr("font-size", "10px");
 
       // Add tooltip on hover
-      node.append("title")
+      node.filter(d => !d.children) // Exclude outer circles
+        .append("title")
         .text(d => d.data.name);
 
       // Zoom behavior
@@ -105,7 +106,7 @@
 	    .selectAll("text")
 	    .data(hierarchy.descendants())
 	    .join("text")
-	      .text(d => d.height === 1 ? d.data.name : '');
+	    .text(d => d.height === 1 ? d.data.name : '');
 	  
 	  groupLabel
 	    .attr("transform", d => `translate(${(d.x)}, ${(d.y - (d.r))})`)
@@ -113,14 +114,13 @@
 	    .attr("class", "repo-name")
 	    .attr("fill", "#fff")
 	    .clone(true)
-	            .lower()
-	            .attr("aria-hidden", "true")
-	            // .style("text-shadow", "1px 1px 2px #40081C, -1px 1px 2px #40081C") // This doesn't export well
-	            .attr("fill", "none")
-	            .attr("stroke", "#6A1131")
-	            .attr("stroke-width", 2)
-	            .attr("stroke-linecap", "round")
-	            .attr("stroke-linejoin", "round");
+        .lower()
+        .attr("aria-hidden", "true")
+        .attr("fill", "none")
+        .attr("stroke", "#6A1131")
+        .attr("stroke-width", 2)
+        .attr("stroke-linecap", "round")
+        .attr("stroke-linejoin", "round");
     });
   </script>
 </body>
