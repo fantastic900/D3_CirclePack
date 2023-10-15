@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>D3 Circle Pack Visualization</title>
+  <style>
+    .node {
+      cursor: pointer;
+    }
+
+    .node:hover {
+      stroke: #000;
+      stroke-width: 1.5px;
+    }
+
+    .node text {
+      font-size: 12px;
+      pointer-events: none;
+      text-anchor: middle;
+    }
+  </style>
+</head>
+<body>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+    // Read the CSV data
+    d3.csv("https://raw.githubusercontent.com/fantastic900/D3_CirclePack/master/New_Completed.csv").then(function(data) {
+      const root = {
+        name: "Root",
+        children: []
+      };
+
+      const parentNames = data.columns;
+
+      // Create parent objects
+      parentNames.forEach(parentName => {
+        root.children.push({
+          name: parentName,
+          children: []
+        });
+      });
+
+      // Populate children within each parent
+      data.forEach(row => {
+        parentNames.forEach(parentName => {
+          const value = row[parentName];
+          if (value) {
+            const parentIndex = parentNames.indexOf(parentName);
+            root.children[parentIndex].children.push({
+              name: value
+            });
+          }
+        });
+      });
+
+      // Preprocess the data
+      const pack = d3.pack()
+        .size([600, 600])
+        .padding(3);
+
+      const hierarchy = d3.hierarchy(root)
+        .sum(d => d.children ? 0 : 1)
+        .sort((a, b) => b.value - a.value);
+
+      pack(hierarchy);
+
+      // Create the SVG container
+      const svg = d3.select("body")
+        .append("svg")
+        .attr("width", 600)
+        .attr("height", 600);
+
+      // Create the circles
+      const node = svg.append("g").selectAll("circle")
+        .data(hierarchy.descendants().slice(1))
+        .join("circle")
+        .attr("class", d => d.children ? "node" : "leaf node")
+        .attr("fill", d => d.children ? "steelblue" : "lightgray")
+        .attr("r", d => d.r)
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y);
+
+      // Add labels to the circles
+      const label = svg.selectAll(".leaf.node")
+        .append("text")
+        .attr("dy", "0.3em")
+        .text(d => d.data.name)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "10px");
+
+      // Add tooltip on hover
+      node.append("title")
+        .text(d => d.data.name);
+
+      // Zoom behavior
+      svg.call(d3.zoom().on("zoom", function() {
+        svg.attr("transform", d3.event.transform);
+      }));
+    });
+  </script>
+</body>
+</html>
